@@ -1,0 +1,186 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: e7ef4b28f417dcd7cb6117bec1bbc8333610e280c7d08c045c25e38744ee357e
+
+name:           frp-workshop
+version:        0.1.0.0
+author:         Franz Thoma
+maintainer:     franz.thoma@tngtech.com
+copyright:      2021 Franz Thoma
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+executable 00-snake-demo
+  main-is: Main.hs
+  other-modules:
+      Paths_frp_workshop
+  hs-source-dirs:
+      00-snake-demo
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , random
+    , threepenny-gui
+  default-language: Haskell2010
+
+executable 01-hello-world
+  main-is: Main.hs
+  other-modules:
+      Solution
+      Paths_frp_workshop
+  hs-source-dirs:
+      01-hello-world
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , random
+    , threepenny-gui
+  default-language: Haskell2010
+
+executable 02-events
+  main-is: Main.hs
+  other-modules:
+      Solution
+      Paths_frp_workshop
+  hs-source-dirs:
+      02-events
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , random
+    , threepenny-gui
+  default-language: Haskell2010
+
+executable 03-behaviors
+  main-is: Main.hs
+  other-modules:
+      Solution
+      Paths_frp_workshop
+  hs-source-dirs:
+      03-behaviors
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , random
+    , threepenny-gui
+  default-language: Haskell2010
+
+executable 04-canvas
+  main-is: Main.hs
+  other-modules:
+      Solution
+      Paths_frp_workshop
+  hs-source-dirs:
+      04-canvas
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , random
+    , threepenny-gui
+  default-language: Haskell2010
+
+executable 05-mvc
+  main-is: Main.hs
+  other-modules:
+      Solution
+      Paths_frp_workshop
+  hs-source-dirs:
+      05-mvc
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , random
+    , threepenny-gui
+  default-language: Haskell2010
+
+executable 06-keyboard-motion
+  main-is: Main.hs
+  other-modules:
+      Solution
+      Paths_frp_workshop
+  hs-source-dirs:
+      06-keyboard-motion
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , random
+    , threepenny-gui
+  default-language: Haskell2010
+
+executable 07-clock
+  main-is: Main.hs
+  other-modules:
+      Solution
+      Paths_frp_workshop
+  hs-source-dirs:
+      07-clock
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , random
+    , threepenny-gui
+  default-language: Haskell2010
+
+executable 08-snake
+  main-is: Main.hs
+  other-modules:
+      Solution
+      Paths_frp_workshop
+  hs-source-dirs:
+      08-snake
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , random
+    , threepenny-gui
+  default-language: Haskell2010
+
+executable 09-level-up
+  main-is: Main.hs
+  other-modules:
+      Solution
+      Paths_frp_workshop
+  hs-source-dirs:
+      09-level-up
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , random
+    , threepenny-gui
+  default-language: Haskell2010
+
+executable 10-game-over
+  main-is: Main.hs
+  other-modules:
+      Solution
+      Paths_frp_workshop
+  hs-source-dirs:
+      10-game-over
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , random
+    , threepenny-gui
+  default-language: Haskell2010
+
+executable 11-styling
+  main-is: Main.hs
+  other-modules:
+      Solution
+      Paths_frp_workshop
+  hs-source-dirs:
+      11-styling
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , random
+    , threepenny-gui
+  default-language: Haskell2010

@@ -1,0 +1,68 @@
+name:                frp-workshop
+version:             0.1.0.0
+license:             BSD3
+author:              "Franz Thoma"
+maintainer:          "franz.thoma@tngtech.com"
+copyright:           "2021 Franz Thoma"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description: ""
+
+dependencies:
+- base >= 4.7 && < 5
+- threepenny-gui
+- random
+
+ghc-options:
+- -threaded
+- -rtsopts
+- -with-rtsopts=-N
+
+
+executables:
+  00-snake-demo:
+    source-dirs: 00-snake-demo
+    main: Main.hs
+  01-hello-world:
+    source-dirs: 01-hello-world
+    main: Main.hs
+  02-events:
+    source-dirs: 02-events
+    main: Main.hs
+  03-behaviors:
+    source-dirs: 03-behaviors
+    main: Main.hs
+  04-canvas:
+    source-dirs: 04-canvas
+    main: Main.hs
+  05-mvc:
+    source-dirs: 05-mvc
+    main: Main.hs
+  06-keyboard-motion:
+    source-dirs: 06-keyboard-motion
+    main: Main.hs
+  07-clock:
+    source-dirs: 07-clock
+    main: Main.hs
+  08-snake:
+    source-dirs: 08-snake
+    main: Main.hs
+  09-level-up:
+    source-dirs: 09-level-up
+    main: Main.hs
+  10-game-over:
+    source-dirs: 10-game-over
+    main: Main.hs
+  11-styling:
+    source-dirs: 11-styling
+    main: Main.hs
