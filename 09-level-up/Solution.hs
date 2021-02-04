@@ -24,115 +24,115 @@ data Point = Point Int Int
     deriving (Eq, Show)
 
 -- First item is the head of the snake
-newtype Snake = Snake [Point]
-    deriving (Eq, Show)
+newtype Snake = Snake { points :: [Point] }
+    deriving (Show)
 
 data Direction = L | U | R | D
     deriving (Show)
 
-initialSnake :: Snake
-initialSnake = Snake [Point 4 0, Point 3 0, Point 2 0, Point 1 0, Point 0 0]
-
-initialDirection :: Direction
-initialDirection = R
-
 initialState :: ApplicationState
 initialState = ApplicationState
-    { snake = initialSnake
-    , direction = initialDirection
-    , item = Point 15 10
+    { snake = Snake [Point 4 0, Point 3 0, Point 2 0, Point 1 0, Point 0 0]
+    , direction = R
+    , item = Point x y
     , score = 0
-    , prng = randomRs (0, 19) (mkStdGen 42) }
+    , prng = prng }
+  where
+    x : y : prng = randomRs (0, 19) (mkStdGen 42)
 
-moveLeft, moveUp, moveRight, moveDown :: Snake -> Snake
-moveLeft  (Snake points@(Point x y : _)) = Snake (Point (x-1) y : init points)
-moveUp    (Snake points@(Point x y : _)) = Snake (Point x (y-1) : init points)
-moveRight (Snake points@(Point x y : _)) = Snake (Point (x+1) y : init points)
-moveDown  (Snake points@(Point x y : _)) = Snake (Point x (y+1) : init points)
+moveLeft, moveUp, moveRight, moveDown :: Point -> Point
+moveLeft  (Point x y) = Point (x-1) y
+moveUp    (Point x y) = Point x (y-1)
+moveRight (Point x y) = Point (x+1) y
+moveDown  (Point x y) = Point x (y+1)
 
-move :: Direction -> Snake -> Snake
+move :: Direction -> Point -> Point
 move direction = case direction of
     L -> moveLeft
     U -> moveUp
     R -> moveRight
     D -> moveDown
 
+moveSnake :: Direction -> Snake -> Snake
+moveSnake direction snake = Snake (move direction (head xs) : init xs)
+  where xs = points snake
+
 step :: ApplicationState -> ApplicationState
-step state = state { snake = move (direction state) (snake state) }
+step state = state { snake = moveSnake (direction state) (snake state) }
 
 changeDirection :: Direction -> ApplicationState -> ApplicationState
 changeDirection newDirection state = state { direction = newDirection }
 
-doesCapture :: ApplicationState -> Bool
-doesCapture ApplicationState { snake = Snake (hd:_), item = item } = hd == item
+canLevelUp :: ApplicationState -> Bool
+canLevelUp state = head (points (snake state)) == item state
 
-levelup :: ApplicationState -> ApplicationState
-levelup state@(ApplicationState { snake = Snake s, item = Point x y, score = score, prng = prng }) =
-    let x':y':prng' = prng
-    in state
-        { snake = Snake (s ++ [last s])
-        , item = Point x' y'
-        , score = score + 1
-        , prng = prng' }
+levelUp :: ApplicationState -> ApplicationState
+levelUp state = state { snake = snake', item = Point x' y', score = score', prng = prng' }
+  where
+    x' : y' : prng' = prng state
+    ps = points (snake state)
+    snake' = Snake { points = ps ++ [last ps]}
+    score' = score state + 1
 
 {-- View --}
 data Page = Page
-    { canvas :: Element
-    , resetButton :: Element
-    , scoreDisplay :: Element }
+    { elemCanvas :: Element
+    , btnReset :: Element
+    , elemScore :: Element }
 
 createPage :: Window -> UI Page
 createPage window = do
-    canvas <- UI.canvas
+    elemCanvas <- UI.canvas
         # set UI.style [("background", "grey")]
         # set UI.width 400
         # set UI.height 400
-    resetButton <- UI.button # set UI.text "Reset"
-    scoreDisplay <- UI.new
-    getBody window #+ [column [element canvas, row [element scoreDisplay, element resetButton]]]
-    pure Page { canvas = canvas, resetButton = resetButton, scoreDisplay = scoreDisplay }
+    btnReset <- UI.button # set UI.text "Reset"
+    elemScore <- UI.new
+    getBody window #+ [column [element elemCanvas, row [element elemScore, element btnReset]]]
+    pure Page { elemCanvas = elemCanvas, btnReset = btnReset, elemScore = elemScore }
 
 render :: Page -> ApplicationState -> UI ()
-render page (ApplicationState { snake = Snake points, item = item }) = do
-    canvas page # UI.clearCanvas
-    for_ points $ \point ->
+render page state = do
+    resetCanvas page
+    for_ (points (snake state)) $ \point ->
         drawPixel page (UI.htmlColor "black") point
-    drawPixel page (UI.htmlColor "green") item
+    drawPixel page (UI.htmlColor "green") (item state)
 
 drawPixel :: Page -> UI.FillStyle -> Point -> UI ()
 drawPixel page color (Point x y) = do
-    canvas page # set' UI.fillStyle color
-    canvas page # UI.fillRect (20 * fromIntegral x, 20 * fromIntegral y) 20 20
+    elemCanvas page # set' UI.fillStyle color
+    elemCanvas page # UI.fillRect (20 * fromIntegral x, 20 * fromIntegral y) 20 20
 
 resetCanvas :: Page -> UI ()
-resetCanvas (Page { canvas = canvas }) = canvas # UI.clearCanvas
+resetCanvas page =
+    elemCanvas page # UI.clearCanvas
 
 {-- Controller --}
 setup :: Window -> UI ()
 setup window = mdo
     page <- createPage window
-    body <- getBody window
+    elemBody <- getBody window
 
     (eClock, tClock) <- liftIO newEvent
     liftIO $ forkIO $ forever $ do
         threadDelay 300000
         tClock ()
 
-    let eStep, eReset, eChangeDirection :: Event (ApplicationState -> ApplicationState)
-        eStep = step <$ eClock
-        eReset = const initialState <$ UI.click (resetButton page)
-        eChangeDirection = changeDirection <$> filterJust (arrowKeyToDirection <$> UI.keydown body)
+    let eStep = step <$ eClock
+        eReset = const initialState <$ UI.click (btnReset page)
+        eChangeDirection = changeDirection <$> filterJust (keyCodeToDirection <$> UI.keydown elemBody)
         -- Look ahead one step since we want to level up *when* capturing, not *after* capturing
-        eLevelUp = levelup <$ filterE (doesCapture . step) (bApp <@ eClock)
+        eLevelUp = levelUp <$ whenE (canLevelUp . step <$> bApp) eClock
         eApp = concatenate <$> unions [eStep, eReset, eChangeDirection, eLevelUp]
     bApp <- accumB initialState eApp
 
-    onChanges bApp $ render page
-    element (scoreDisplay page) # sink UI.text (("Score: " ++) . show . score <$> bApp)
-    pure ()
+    element (elemScore page)
+        # sink UI.text (("Score: " ++) . show . score <$> bApp)
 
-arrowKeyToDirection :: UI.KeyCode -> Maybe Direction
-arrowKeyToDirection keyCode = case keyCode of
+    onChanges bApp $ render page
+
+keyCodeToDirection :: UI.KeyCode -> Maybe Direction
+keyCodeToDirection keyCode = case keyCode of
     37 -> Just L
     38 -> Just U
     39 -> Just R

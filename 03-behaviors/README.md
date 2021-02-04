@@ -14,12 +14,14 @@ continuous value that changes over time. Mathematically, You can think of a
 `Behavior a` as a continuous function `Time -> a`, whereas an `Event a` is
 rather a discrete `Map Time a`.
 
+![](../img/behaviors.png)
+
 Behaviors are usually constructed from Events, via two main concepts:
 * Stepping ([`stepper`]): The behavior changes every time an event occurs, and
-  takes the value of the event and and holds it until the next event.
+  takes the value of the event and and holds it until the next event. ![](../img/stepping.png)
 * Accumulation ([`accumB`]): Events are functions, `Event (a -> a)`, and with
   every event, the function is applied to the current value of the behavior,
-  yielding the new value.
+  yielding the new value. ![](../img/accumulation.png)
 
 [`Behavior`]: https://hackage.haskell.org/package/threepenny-gui-0.9.0.0/docs/Reactive-Threepenny.html#t:Behavior
 [`stepper`]: https://hackage.haskell.org/package/threepenny-gui-0.9.0.0/docs/Reactive-Threepenny.html#v:stepper

@@ -8,16 +8,16 @@ main = UI.startGUI UI.defaultConfig setup
 
 setup :: Window -> UI ()
 setup window = do
-    incrementButton <- UI.button # set UI.text "+"
-    decrementButton <- UI.button # set UI.text "-"
-    display <- UI.div
-    getBody window #+ [row [element decrementButton, element display, element incrementButton]]
+    btnIncrement <- UI.button # set UI.text "+"
+    btnDecrement <- UI.button # set UI.text "-"
+    elemCounter <- UI.new
+    getBody window #+ [row [element btnDecrement, element elemCounter, element btnIncrement]]
 
-    let eIncrement = increment <$ UI.click incrementButton
-        eDecrement = decrement <$ UI.click decrementButton
+    let eIncrement = increment <$ UI.click btnIncrement
+        eDecrement = decrement <$ UI.click btnDecrement
         eCounter = unionWith (.) eIncrement eDecrement
     bCounter <- accumB 0 eCounter
-    element display # sink UI.text (show <$> bCounter)
+    element elemCounter # sink UI.text (show <$> bCounter)
     pure ()
 
 increment, decrement :: Int -> Int

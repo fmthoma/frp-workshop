@@ -47,3 +47,9 @@ Exercise
 
 Starting from the previous exercise, render a single black pixel that can be
 moved around with the arrow keys.
+
+### Hints
+
+Note we also need to change the behavior of the reset button: Rather than
+clearing the state of the _view_ (i.e. the canvas), it should now clear the
+state of the _model_ (i.e. reset the program itself the initial state).

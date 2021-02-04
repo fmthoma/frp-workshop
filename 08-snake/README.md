@@ -33,3 +33,7 @@ for_ pixels $ \pixel -> do
 
 [Data.Foldable]: https://hackage.haskell.org/package/base-4.14.1.0/docs/Data-Foldable.html
 [`for_`]: https://hackage.haskell.org/package/base-4.14.1.0/docs/Data-Foldable.html#v:for_
+
+
+
+TODO: Hint for snake head = list head (and right order of the initial state)

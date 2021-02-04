@@ -12,52 +12,60 @@ data ApplicationState = ApplicationState
 
 data DrawingState = Drawing | NotDrawing
 
+initialState :: ApplicationState
+initialState = ApplicationState { drawing = NotDrawing }
+
 isDrawing :: ApplicationState -> Bool
 isDrawing state = case drawing state of
-    Drawing -> True
+    Drawing    -> True
     NotDrawing -> False
+
+startDrawing :: ApplicationState -> ApplicationState
+startDrawing state = state { drawing = Drawing }
+
+stopDrawing :: ApplicationState -> ApplicationState
+stopDrawing state = state { drawing = NotDrawing }
 
 {-- View --}
 data Page = Page
-    { canvas :: Element
-    , resetButton :: Element }
+    { elemCanvas :: Element
+    , btnReset :: Element }
 
 createPage :: Window -> UI Page
 createPage window = do
-    canvas <- UI.canvas
+    elemCanvas <- UI.canvas
         # set UI.style [("background", "grey")]
         # set UI.width 400
         # set UI.height 400
-    resetButton <- UI.button # set UI.text "Reset"
-    getBody window #+ [element canvas, element resetButton]
-    pure Page { canvas = canvas, resetButton = resetButton }
+    btnReset <- UI.button # set UI.text "Reset"
+    getBody window #+ [element elemCanvas, element btnReset]
+    pure Page { elemCanvas = elemCanvas, btnReset = btnReset }
 
-drawBlackPixel :: Page -> (Double, Double) -> UI ()
-drawBlackPixel (Page { canvas = canvas }) (x, y) = do
-    let pixelX = floor (x/20)
-        pixelY = floor (y/20)
-    canvas # set' UI.fillStyle (UI.htmlColor "black")
-    canvas # UI.fillRect (20 * fromIntegral pixelX, 20 * fromIntegral pixelY) 20 20
+drawBlackPixel :: Page -> (Int, Int) -> UI ()
+drawBlackPixel page (x, y) = do
+    elemCanvas page # set' UI.fillStyle (UI.htmlColor "black")
+    elemCanvas page # UI.fillRect (20 * fromIntegral x, 20 * fromIntegral y) 20 20
 
 resetCanvas :: Page -> UI ()
-resetCanvas (Page { canvas = canvas }) = canvas # UI.clearCanvas
+resetCanvas page =
+    elemCanvas page # UI.clearCanvas
 
 {-- Controller --}
 setup :: Window -> UI ()
 setup window = do
     page <- createPage window
 
-    on UI.mousedown (canvas page) $ drawBlackPixel page
+    on UI.mousedown (elemCanvas page) $ \(x, y) ->
+        drawBlackPixel page (floor (x / 20), floor (y / 20))
 
-    on UI.click (resetButton page) $ \() -> resetCanvas page
+    on UI.click (btnReset page) $ \() -> resetCanvas page
 
-    let eStartDrawing = Drawing    <$ UI.mousedown (canvas page)
-        eStopDrawing  = NotDrawing <$ UI.mouseup   (canvas page)
-        eDrawing = unionWith const eStartDrawing eStopDrawing
-    bDrawing <- stepper NotDrawing eDrawing
+    let eStartDrawing = startDrawing <$ UI.mousedown (elemCanvas page)
+        eStopDrawing  = stopDrawing  <$ UI.mouseup   (elemCanvas page)
+        eApp = unionWith (.) eStartDrawing eStopDrawing
+    bApp <- accumB initialState eApp
 
-    let bApplication = ApplicationState <$> bDrawing
-
-    onEvent (whenE (isDrawing <$> bApplication) (UI.mousemove (canvas page))) $ drawBlackPixel page
+    onEvent (whenE (isDrawing <$> bApp) (UI.mousemove (elemCanvas page))) $ \(x, y) ->
+        drawBlackPixel page (floor (x / 20), floor (y / 20))
 
     pure ()

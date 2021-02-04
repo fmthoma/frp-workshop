@@ -8,6 +8,8 @@ The [`Event`] type in FRP represents a stream of events as they occur in time.
 You can think of an event as a discrete map from a point in time to a value,
 `Map Time a`, i.e. it only has a defined value at certain points in time.
 
+![](../img/events.png)
+
 You can listen to events using the [`on`] and [`onEvent`] functions, supplying a
 callback:
 
@@ -39,12 +41,17 @@ it.
 
 If you get error messages along the lines of »Couldn't match type ‘Element’ with
 ‘UI Element’«, then you probably forgot to put [`element`] in front of an
-element. Try
-
-    element foo # set UI.text "Foo"
-
-instead of
+element. Instead of
 
     foo # set UI.text "Foo"
 
+try
+
+    element foo # set UI.text "Foo"
+
+Alternatively, you can use [`set'`]:
+
+    foo # set' UI.text "Foo"
+
 [`element`]: https://hackage.haskell.org/package/threepenny-gui-0.9.0.0/docs/Graphics-UI-Threepenny-Core.html#v:element
+[`set'`]: https://hackage.haskell.org/package/threepenny-gui-0.9.0.0/docs/Graphics-UI-Threepenny-Core.html#v:set-39-

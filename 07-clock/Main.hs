@@ -8,14 +8,15 @@ main = UI.startGUI UI.defaultConfig setup
 
 {-- Model --}
 data ApplicationState = ApplicationState
-    { location :: Point }
+    { position :: Point }
     deriving (Show)
 
 data Point = Point Int Int
     deriving (Show)
 
-initialPoint :: Point
-initialPoint = Point 0 0
+initialState :: ApplicationState
+initialState = ApplicationState
+    { position = Point 0 0 }
 
 moveLeft, moveUp, moveRight, moveDown :: Point -> Point
 moveLeft  (Point x y) = Point (x-1) y
@@ -23,52 +24,53 @@ moveUp    (Point x y) = Point x (y-1)
 moveRight (Point x y) = Point (x+1) y
 moveDown  (Point x y) = Point x (y+1)
 
+mapPosition :: (Point -> Point) -> ApplicationState -> ApplicationState
+mapPosition f state = state { position = f (position state) }
+
 {-- View --}
 data Page = Page
-    { canvas :: Element
-    , resetButton :: Element }
+    { elemCanvas :: Element
+    , btnReset :: Element }
 
 createPage :: Window -> UI Page
 createPage window = do
-    canvas <- UI.canvas
+    elemCanvas <- UI.canvas
         # set UI.style [("background", "grey")]
         # set UI.width 400
         # set UI.height 400
-    resetButton <- UI.button # set UI.text "Reset"
-    getBody window #+ [element canvas, element resetButton]
-    pure Page { canvas = canvas, resetButton = resetButton }
+    btnReset <- UI.button # set UI.text "Reset"
+    getBody window #+ [element elemCanvas, element btnReset]
+    pure Page { elemCanvas = elemCanvas, btnReset = btnReset }
 
 render :: Page -> ApplicationState -> UI ()
-render page (ApplicationState { location = location }) = do
-    canvas page # UI.clearCanvas
-    drawBlackPixel page location
+render page state = do
+    resetCanvas page
+    drawBlackPixel page (position state)
 
 drawBlackPixel :: Page -> Point -> UI ()
 drawBlackPixel page (Point x y) = do
-    canvas page # set' UI.fillStyle (UI.htmlColor "black")
-    canvas page # UI.fillRect (20 * fromIntegral x, 20 * fromIntegral y) 20 20
+    elemCanvas page # set' UI.fillStyle (UI.htmlColor "black")
+    elemCanvas page # UI.fillRect (20 * fromIntegral x, 20 * fromIntegral y) 20 20
 
 resetCanvas :: Page -> UI ()
-resetCanvas (Page { canvas = canvas }) = canvas # UI.clearCanvas
+resetCanvas page =
+    elemCanvas page # UI.clearCanvas
 
 {-- Controller --}
 setup :: Window -> UI ()
 setup window = do
     page <- createPage window
-    body <- getBody window
+    elemBody <- getBody window
 
-    let eMotion = filterJust $ arrowKeyToMotion <$> UI.keydown body
-        eResetPoint = const initialPoint <$ UI.click (resetButton page)
-        ePoint = unionWith (.) eMotion eResetPoint
-    bPoint <- accumB initialPoint ePoint
+    let eMove = mapPosition <$> filterJust (keyCodeToMotion <$> UI.keydown elemBody)
+        eReset = const initialState <$ UI.click (btnReset page)
+        eApp = unionWith (.) eMove eReset
+    bApp <- accumB initialState eApp
 
-    let bApplication = ApplicationState <$> bPoint
+    onChanges bApp $ render page
 
-    onChanges bApplication $ render page
-    pure ()
-
-arrowKeyToMotion :: UI.KeyCode -> Maybe (Point -> Point)
-arrowKeyToMotion keyCode = case keyCode of
+keyCodeToMotion :: UI.KeyCode -> Maybe (Point -> Point)
+keyCodeToMotion keyCode = case keyCode of
     37 -> Just moveLeft
     38 -> Just moveUp
     39 -> Just moveRight

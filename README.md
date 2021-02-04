@@ -44,3 +44,62 @@ and browse to [localhost:8023].
 
 Functional Reactive Programming
 --------------------------------------------------------------------------------
+
+Functional Reactive Programming (FRP) is a concept for writing reactive (or
+asynchronous) programs in the paradigm of functional programming. »Reactive«
+means that program execution is not driven by executing actions one after the
+other, but rather by asynchronous events (such as user actions, or data points
+travelling down a pipeline).
+
+A more precise description of the core concepts of FRP is »Denotative
+Continuous-Time Programming«:
+
+* **Denotative semantics** do not focus on the individual steps to produce a result
+    (»how to do it«), but rather on the result you want to achieve (»what to do«).
+    Haskell itself is a good example of denotative programming:
+
+    ```haskell
+    -- sumOfSquares is the sum of the list with each element squared
+    sumOfSquares xs = sum (map (^2) xs)
+    ```
+
+    The converse is **Operational semantics**, focusing on _how_ to do things. This
+    is more prevalent in imperative languages such as C, C++, Java, …:
+
+    ```java
+    // sumOfSquares is obtained by starting with an initial partial sum of 0,
+    // looping over all items, squaring the item, and adding it to the partial sum.
+    // After the loop is done, the sum is returned.
+    int sumOfSquares(int[] xs) {
+        int sum = 0;
+        for (int i = 0; i < xs.length; i++) {
+            sum += x^2;
+        }
+        return sum;
+    }
+    ```
+
+    FRP is denotative in the sense that it does not so much focus on _how_ to handle
+    asynchronous events, but _what_ to do with the data.
+
+* **Continuous-Time** programming adds to the denotative semantics with an
+    explicit notion of time.
+
+    Traditional reactive programming is all about handling events: Whenever an
+    event occurs, we run some code, change some state, maybe trigger some new
+    events, and that's it. There is no notion of time or behavior »in between
+    events«.
+
+    Continuous-Time programming adds the notion of _behaviors_: Continuous-Time
+    functions that are defined at every point in time. Instead of changing state
+    whenever an event occurs, for other events to register, events _produce_
+    behaviors, which can be merged and mixed with other behaviors or events.
+
+FRP has been originally described in a 1997 paper by Conal Elliott and Paul
+Hudak. There are several Haskell libraries that follow this paradigm (e.g.
+reactive-banana, Reflex), and the Elm programming language and framework is
+largely based on the concepts.
+
+Today, a large portion of single-page web applications are based on web
+frameworks like React and Redux, or Vue.js, which are in turn based on the ideas
+of FRP.

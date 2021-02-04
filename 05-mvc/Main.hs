@@ -8,29 +8,28 @@ main = UI.startGUI UI.defaultConfig setup
 
 setup :: Window -> UI ()
 setup window = do
-    canvas <- UI.canvas
+    elemCanvas <- UI.canvas
         # set UI.style [("background", "grey")]
         # set UI.width 400
         # set UI.height 400
-    resetButton <- UI.button # set UI.text "Reset"
-    getBody window #+ [element canvas, element resetButton]
+    btnReset <- UI.button # set UI.text "Reset"
+    getBody window #+ [element elemCanvas, element btnReset]
 
-    on UI.mousedown canvas $ \(x, y) ->
-        drawBlackPixel canvas (floor (x / 20), floor (y / 20))
+    on UI.mousedown elemCanvas $ \(x, y) ->
+        drawBlackPixel elemCanvas (floor (x / 20), floor (y / 20))
 
-    on UI.click resetButton $ \() ->
-        canvas # UI.clearCanvas
+    let eStartDrawing = const True  <$ UI.mousedown elemCanvas
+        eStopDrawing  = const False <$ UI.mouseup   elemCanvas
+        eDrawing = unionWith (.) eStartDrawing eStopDrawing
+    bDrawing <- accumB False eDrawing
 
-    let eMouseDown = True  <$ UI.mousedown canvas
-        eMouseUp   = False <$ UI.mouseup   canvas
-        eDrawing = unionWith const eMouseDown eMouseUp
-    bDrawing <- stepper False eDrawing
+    onEvent (whenE bDrawing (UI.mousemove elemCanvas)) $ \(x, y) ->
+        drawBlackPixel elemCanvas (floor (x / 20), floor (y / 20))
 
-    onEvent (whenE bDrawing (UI.mousemove canvas)) $ \(x, y) ->
-        drawBlackPixel canvas (floor (x / 20), floor (y / 20))
-    pure ()
+    on UI.click btnReset $ \() ->
+        elemCanvas # UI.clearCanvas
 
 drawBlackPixel :: Element -> (Int, Int) -> UI ()
-drawBlackPixel canvas (x, y) = do
-    canvas # set' UI.fillStyle (UI.htmlColor "black")
-    canvas # UI.fillRect (20 * fromIntegral x, 20 * fromIntegral y) 20 20
+drawBlackPixel elemCanvas (x, y) = do
+    elemCanvas # set' UI.fillStyle (UI.htmlColor "black")
+    elemCanvas # UI.fillRect (20 * fromIntegral x, 20 * fromIntegral y) 20 20

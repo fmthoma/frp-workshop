@@ -10,7 +10,7 @@ main = UI.startGUI UI.defaultConfig setup
 
 {-- Model --}
 data ApplicationState = ApplicationState
-    { location :: Point
+    { position :: Point
     , direction :: Direction }
     deriving (Show)
 
@@ -20,14 +20,10 @@ data Point = Point Int Int
 data Direction = L | U | R | D
     deriving (Show)
 
-initialPoint :: Point
-initialPoint = Point 0 0
-
-initialDirection :: Direction
-initialDirection = R
-
 initialState :: ApplicationState
-initialState = ApplicationState { location = initialPoint, direction = initialDirection }
+initialState = ApplicationState
+    { position = Point 0 0
+    , direction = R }
 
 moveLeft, moveUp, moveRight, moveDown :: Point -> Point
 moveLeft  (Point x y) = Point (x-1) y
@@ -43,62 +39,61 @@ move direction = case direction of
     D -> moveDown
 
 step :: ApplicationState -> ApplicationState
-step state = state { location = move (direction state) (location state) }
+step state = state { position = move (direction state) (position state) }
 
 changeDirection :: Direction -> ApplicationState -> ApplicationState
 changeDirection newDirection state = state { direction = newDirection }
 
 {-- View --}
 data Page = Page
-    { canvas :: Element
-    , resetButton :: Element }
+    { elemCanvas :: Element
+    , btnReset :: Element }
 
 createPage :: Window -> UI Page
 createPage window = do
-    canvas <- UI.canvas
+    elemCanvas <- UI.canvas
         # set UI.style [("background", "grey")]
         # set UI.width 400
         # set UI.height 400
-    resetButton <- UI.button # set UI.text "Reset"
-    getBody window #+ [element canvas, element resetButton]
-    pure Page { canvas = canvas, resetButton = resetButton }
+    btnReset <- UI.button # set UI.text "Reset"
+    getBody window #+ [element elemCanvas, element btnReset]
+    pure Page { elemCanvas = elemCanvas, btnReset = btnReset }
 
 render :: Page -> ApplicationState -> UI ()
-render page (ApplicationState { location = location }) = do
-    canvas page # UI.clearCanvas
-    drawBlackPixel page location
+render page state = do
+    resetCanvas page
+    drawBlackPixel page (position state)
 
 drawBlackPixel :: Page -> Point -> UI ()
 drawBlackPixel page (Point x y) = do
-    canvas page # set' UI.fillStyle (UI.htmlColor "black")
-    canvas page # UI.fillRect (20 * fromIntegral x, 20 * fromIntegral y) 20 20
+    elemCanvas page # set' UI.fillStyle (UI.htmlColor "black")
+    elemCanvas page # UI.fillRect (20 * fromIntegral x, 20 * fromIntegral y) 20 20
 
 resetCanvas :: Page -> UI ()
-resetCanvas (Page { canvas = canvas }) = canvas # UI.clearCanvas
+resetCanvas page =
+    elemCanvas page # UI.clearCanvas
 
 {-- Controller --}
 setup :: Window -> UI ()
 setup window = do
     page <- createPage window
-    body <- getBody window
+    elemBody <- getBody window
 
     (eClock, tClock) <- liftIO newEvent
     liftIO $ forkIO $ forever $ do
         threadDelay 300000
         tClock ()
 
-    let eStep, eReset, eChangeDirection :: Event (ApplicationState -> ApplicationState)
-        eStep = step <$ eClock
-        eReset = const initialState <$ UI.click (resetButton page)
-        eChangeDirection = changeDirection <$> filterJust (arrowKeyToDirection <$> UI.keydown body)
+    let eStep = step <$ eClock
+        eReset = const initialState <$ UI.click (btnReset page)
+        eChangeDirection = changeDirection <$> filterJust (keyCodeToDirection <$> UI.keydown elemBody)
         eApp = concatenate <$> unions [eStep, eReset, eChangeDirection]
     bApp <- accumB initialState eApp
 
     onChanges bApp $ render page
-    pure ()
 
-arrowKeyToDirection :: UI.KeyCode -> Maybe Direction
-arrowKeyToDirection keyCode = case keyCode of
+keyCodeToDirection :: UI.KeyCode -> Maybe Direction
+keyCodeToDirection keyCode = case keyCode of
     37 -> Just L
     38 -> Just U
     39 -> Just R
