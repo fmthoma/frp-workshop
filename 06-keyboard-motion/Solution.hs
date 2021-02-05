@@ -14,6 +14,9 @@ data ApplicationState = ApplicationState
 data Point = Point Int Int
     deriving (Show)
 
+data Direction = L | U | R | D
+    deriving (Show)
+
 initialState :: ApplicationState
 initialState = ApplicationState
     { position = Point 0 0 }
@@ -23,6 +26,13 @@ moveLeft  (Point x y) = Point (x-1) y
 moveUp    (Point x y) = Point x (y-1)
 moveRight (Point x y) = Point (x+1) y
 moveDown  (Point x y) = Point x (y+1)
+
+move :: Direction -> Point -> Point
+move direction = case direction of
+    L -> moveLeft
+    U -> moveUp
+    R -> moveRight
+    D -> moveDown
 
 mapPosition :: (Point -> Point) -> ApplicationState -> ApplicationState
 mapPosition f state = state { position = f (position state) }
@@ -62,17 +72,17 @@ setup window = do
     page <- createPage window
     elemBody <- getBody window
 
-    let eMove = mapPosition <$> filterJust (keyCodeToMotion <$> UI.keydown elemBody)
+    let eMove = mapPosition . move <$> filterJust (keyCodeToDirection <$> UI.keydown elemBody)
         eReset = const initialState <$ UI.click (btnReset page)
         eApp = unionWith (.) eMove eReset
     bApp <- accumB initialState eApp
 
     onChanges bApp $ render page
 
-keyCodeToMotion :: UI.KeyCode -> Maybe (Point -> Point)
-keyCodeToMotion keyCode = case keyCode of
-    37 -> Just moveLeft
-    38 -> Just moveUp
-    39 -> Just moveRight
-    40 -> Just moveDown
+keyCodeToDirection :: UI.KeyCode -> Maybe Direction
+keyCodeToDirection keyCode = case keyCode of
+    37 -> Just L
+    38 -> Just U
+    39 -> Just R
+    40 -> Just D
     _  -> Nothing
